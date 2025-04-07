@@ -1,3 +1,5 @@
 
 for i in range (1,10):
-    print("§A¦n°Ú!")
+    print("hello!")
+
+print("hello you guys!")
