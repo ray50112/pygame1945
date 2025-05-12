@@ -1,7 +1,5 @@
 from pathlib import Path
-from typing import Union
 import pygame
-from pygame.surface import Surface, SurfaceType
 from gobject import GameObject
 import math
 
@@ -14,7 +12,7 @@ class Player(GameObject):
         self.__player_path = __parent_path/ 'res' / 'airforce1.png'
         self._image = pygame.image.load(self.__player_path)
         self._center = self._x + self._image.get_rect().w / 2, self._y + self._image.get_rect().h / 2
-        self.radius = 0.3 * math.hypot(self._image.get_rect().w, self._image.get_rect().h)
+        self._radius = 0.3 * math.hypot(self._image.get_rect().w, self._image.get_rect().h)
         
         if xy is None:
             self._x = (self._playground[0]-self._image.get_rect().w) / 2
@@ -30,7 +28,7 @@ class Player(GameObject):
         
     def collison_detect(self, enemies):
         for m in enemies:
-            if self._collided_(m):
+            if self.__collided__(m):
                 self._hp -= 10
                 self._collided = True
                 m.hp = -1

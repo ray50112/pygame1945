@@ -2,7 +2,8 @@ from pathlib import Path
 import pygame
 from player import Player
 from mymissile import MyMissile
-
+from myenemy import Enemy
+import random
 parent_path = Path(__file__).parents[0]
 image_path = parent_path / 'res'
 print(image_path)
@@ -11,6 +12,7 @@ icon_path = image_path / 'airplane.png'
 Missiles = []
 pygame.init()
 launchMissile = pygame.USEREVENT + 1
+launchEnemy = pygame.USEREVENT + 2
 screenHigh = 760
 screenWidth = 1000
 playground = [screenWidth, screenHigh]
@@ -27,23 +29,29 @@ running = True
 fps = 120
 clock = pygame.time.Clock()
 movingScale = 600 / fps
-player =Player(playground=playground, sensitivity=movingScale)
-
+player = Player(playground=playground, sensitivity=movingScale)
+Enemys = []
 keyCountX = 0
 keyCountY = 0
-
+pygame.time.set_timer(launchEnemy, 400)
 while running:
-    launchMissile = pygame.USEREVENT + 1
+
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running =False
-            
+
         if event.type == launchMissile:
             m_x = player.x + 20
             m_y = player.y
             Missiles.append(MyMissile(xy=(m_x, m_y), playground=playground, sensitivity=movingScale))
             m_x = player.x + 80
             Missiles.append(MyMissile(playground, (m_x, m_y), movingScale))
+
+        if event.type == launchEnemy:
+            m_x = random.randint(50, screenWidth - 100)
+            m_y = -50
+            Enemys.append(Enemy(xy=(m_x, m_y), playground=playground, sensitivity=movingScale))
+
             
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_a:
@@ -87,7 +95,17 @@ while running:
     Missiles = [item for item in Missiles if item._available]
     for m in Missiles:
         m.update()
+        m.collision_detect(Enemys)
         screen.blit(m._image, m.xy)
+    Enemys = [item for item in Enemys if item._available]
+    for e in Enemys:
+        e.update()
+        e.collision_detect(Missiles)
+        e.collision_detect([player])
+        if e._exploded:
+            screen.blit(e._explosion_image, e.xy)
+        else:
+            screen.blit(e._image, e.xy)
     player.update()
     screen.blit(player._image, player.xy)
     pygame.display.update()
