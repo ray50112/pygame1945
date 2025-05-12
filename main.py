@@ -1,15 +1,16 @@
 from pathlib import Path
 import pygame
 from player import Player
+from mymissile import MyMissile
 
 parent_path = Path(__file__).parents[0]
 image_path = parent_path / 'res'
 print(image_path)
 icon_path = image_path / 'airplane.png'
 
-
+Missiles = []
 pygame.init()
-
+launchMissile = pygame.USEREVENT + 1
 screenHigh = 760
 screenWidth = 1000
 playground = [screenWidth, screenHigh]
@@ -32,9 +33,18 @@ keyCountX = 0
 keyCountY = 0
 
 while running:
+    launchMissile = pygame.USEREVENT + 1
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running =False
+            
+        if event.type == launchMissile:
+            m_x = player.x + 20
+            m_y = player.y
+            Missiles.append(MyMissile(xy=(m_x, m_y), playground=playground, sensitivity=movingScale))
+            m_x = player.x + 80
+            Missiles.append(MyMissile(playground, (m_x, m_y), movingScale))
+            
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_a:
                 keyCountX += 1
@@ -49,10 +59,14 @@ while running:
                 keyCountY += 1
                 player.to_the_top()
             if event.key == pygame.K_SPACE:
-                m_x =player.x +20
+                m_x = player.x + 20
                 m_y = player.y
+                Missiles.append(MyMissile(xy=(m_x, m_y), playground=playground, sensitivity=movingScale))
+                m_x = player.x + 80
+                Missiles.append(MyMissile(playground, (m_x, m_y), movingScale))
+                pygame.time.set_timer(launchMissile, 400)
                 
-
+            
         if event.type == pygame.KEYUP:
             if event.key == pygame.K_a or event.key == pygame.K_d:
                 if keyCountX == 1:
@@ -66,8 +80,14 @@ while running:
                     player.stop_y()
                 else:
                     keyCountY -= 1
-            
+            if event.key == pygame.K_SPACE:
+                pygame.time.set_timer(launchMissile, 0)
+
     screen.blit(background, (0,0))
+    Missiles = [item for item in Missiles if item._available]
+    for m in Missiles:
+        m.update()
+        screen.blit(m._image, m.xy)
     player.update()
     screen.blit(player._image, player.xy)
     pygame.display.update()
