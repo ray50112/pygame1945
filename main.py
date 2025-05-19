@@ -3,13 +3,18 @@ import pygame
 from player import Player
 from mymissile import MyMissile
 from myenemy import Enemy
+from myexplosion import Explosion
 import random
+
 parent_path = Path(__file__).parents[0]
 image_path = parent_path / 'res'
 print(image_path)
 icon_path = image_path / 'airplane.png'
 
 Missiles = []
+Enemys = []
+Booms = []
+
 pygame.init()
 launchMissile = pygame.USEREVENT + 1
 launchEnemy = pygame.USEREVENT + 2
@@ -30,7 +35,6 @@ fps = 120
 clock = pygame.time.Clock()
 movingScale = 600 / fps
 player = Player(playground=playground, sensitivity=movingScale)
-Enemys = []
 keyCountX = 0
 keyCountY = 0
 pygame.time.set_timer(launchEnemy, 400)
@@ -92,22 +96,34 @@ while running:
                 pygame.time.set_timer(launchMissile, 0)
 
     screen.blit(background, (0,0))
+    
+    player.collision_detect(Enemys)
+    for e in Missiles:
+        e.collision_detect(Enemys)  
+    
+    for e in Enemys:
+        if e._collided:
+            Booms.append(Explosion(e._center))
+    
     Missiles = [item for item in Missiles if item._available]
     for m in Missiles:
         m.update()
-        m.collision_detect(Enemys)
         screen.blit(m._image, m.xy)
+    
     Enemys = [item for item in Enemys if item._available]
     for e in Enemys:
         e.update()
-        e.collision_detect(Missiles)
-        e.collision_detect([player])
-        if e._exploded:
-            screen.blit(e._explosion_image, e.xy)
-        else:
-            screen.blit(e._image, e.xy)
+        screen.blit(e._image, e.xy)
+    
+
     player.update()
     screen.blit(player._image, player.xy)
+    
+    Booms = [item for item in Booms if item._available]
+    for e in Booms:
+        e.update()
+        screen.blit(e._image, e.xy)
+        
     pygame.display.update()
     dt = clock.tick(fps)
 

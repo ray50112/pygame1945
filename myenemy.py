@@ -1,8 +1,7 @@
 from pathlib import Path
 import pygame
 from gobject import GameObject
-import math
-
+import random
 class Enemy(GameObject):
     
     def __init__(self, playground, xy, sensitivity=1):
@@ -14,19 +13,17 @@ class Enemy(GameObject):
         self._radius = self._image.get_rect().w / 2
         self._x = xy[0]
         self._y = xy[1]
-        self._exploded = False
-        __explosion_path = __parent_path / 'res' / 'explosion_small.png'
-        self._explosion_image = pygame.image.load(__explosion_path)
         self._objectBound = (0, self._playground[0], -self._image.get_rect().h - 10, self._playground[1])
-        self._moveScale = 0.7 * sensitivity
+        self._moveScale = 0.3 * sensitivity
         self.to_the_bottom()
+        self._vx = random.choice([-1, 1]) * random.uniform(1.0, 2.0)
 
     
     def update(self):
-        if self._exploded:
-            if pygame.time.get_ticks() - self._explosion_timer > 300:
-                self._available = False
-            return
+        self._x += self._vx
+        if self._x < 0 or self._x > self._objectBound[1] - self._image.get_width():
+            self._vx *= -1  # 反向
+        
         self._y += self._changeY
         if self._y > self._objectBound[3]:
             self._available = False
@@ -37,11 +34,11 @@ class Enemy(GameObject):
             if self.__collided__(e):
                 self._hp -= 10
                 self._collided = True
-                self._exploded = True
+                self._available = False
                 e.hp = -1
-                e.collided = True
-                e.available = False
-                self._explosion_timer = pygame.time.get_ticks()
+                e._collided = True
+                e._available = False
+
     @property
     def xy(self):
         return self.x, self.y

@@ -32,8 +32,8 @@ class MyMissile(GameObject):
                 self._collided = True
                 self._available = False
                 m.hp = -1
-                m.collided = True
-                m.available = False
+                m._collided = True
+                m._available = False
 
     @property
     def xy(self):

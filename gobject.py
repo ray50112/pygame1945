@@ -73,3 +73,6 @@ class GameObject:
             return True
         else:
             return False
+
+    def __del__(self):
+        print(self.__class__.__name__, "is being automatically destroyed. Goodbye!")
