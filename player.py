@@ -13,7 +13,8 @@ class Player(GameObject):
         self._image = pygame.image.load(self.__player_path)
         self._center = self._x + self._image.get_rect().w / 2, self._y + self._image.get_rect().h / 2
         self._radius = 0.3 * math.hypot(self._image.get_rect().w, self._image.get_rect().h)
-        
+        self._max_hp = 100
+        self._hp = 100
         if xy is None:
             self._x = (self._playground[0]-self._image.get_rect().w) / 2
             self._y = 3 * self._playground[1] / 4
@@ -30,10 +31,20 @@ class Player(GameObject):
         for m in enemies:
             if self.__collided__(m):
                 self._hp -= 10
+                if self._hp <= 0:
+                    self._available = False
                 self._collided = True
                 m.hp = -1
                 m._collided = True
                 m._available = False
+                
+    def draw_hp_bar(self, surface):
+        # 血條比例
+        hp_ratio = max(self._hp / self._max_hp, 0)
+        # 外框
+        pygame.draw.rect(surface, (255, 255, 255), (self._x, self._y - 10, self._image.get_width(), 6), 1)
+        # 內部紅條
+        pygame.draw.rect(surface, (255, 0, 0), (self._x + 1, self._y - 9, (self._image.get_width() - 2) * hp_ratio, 4))
     
     @property
     def xy(self):

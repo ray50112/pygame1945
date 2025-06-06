@@ -4,6 +4,7 @@ from player import Player
 from mymissile import MyMissile
 from myenemy import Enemy
 from myexplosion import Explosion
+from mymenu import Menu, GameOver
 import random
 
 parent_path = Path(__file__).parents[0]
@@ -16,6 +17,7 @@ Enemys = []
 Booms = []
 
 pygame.init()
+
 launchMissile = pygame.USEREVENT + 1
 launchEnemy = pygame.USEREVENT + 2
 screenHigh = 760
@@ -23,12 +25,16 @@ screenWidth = 1000
 playground = [screenWidth, screenHigh]
 screen = pygame.display.set_mode((screenWidth, screenHigh))
 
-pygame.display.set_caption('1942偽')
+font = pygame.font.SysFont(None, 48)
+menu = Menu(screen, font)
+mode, enemy_interval = menu.run()
+
+pygame.display.set_caption('Fake 1942')
 icon = pygame.image.load(icon_path)
 pygame.display.set_icon(icon)
-background = pygame.Surface(screen.get_size())
-background.fill((50,50,50))
-
+bg_path = image_path / 'bg.jpg'
+background = pygame.image.load(bg_path).convert() 
+background = pygame.transform.scale(background, (screenWidth, screenHigh))
 
 running = True
 fps = 120
@@ -37,7 +43,8 @@ movingScale = 600 / fps
 player = Player(playground=playground, sensitivity=movingScale)
 keyCountX = 0
 keyCountY = 0
-pygame.time.set_timer(launchEnemy, 400)
+pygame.time.set_timer(launchEnemy, enemy_interval)
+
 while running:
 
     for event in pygame.event.get():
@@ -118,7 +125,11 @@ while running:
 
     player.update()
     screen.blit(player._image, player.xy)
-    
+    player.draw_hp_bar(screen)
+    if not player._available:
+        game_over = GameOver(screen, font)
+        game_over.run()
+
     Booms = [item for item in Booms if item._available]
     for e in Booms:
         e.update()
